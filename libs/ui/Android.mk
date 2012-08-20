@@ -16,6 +16,7 @@ LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
 
 LOCAL_SRC_FILES:= \
+        Overlay.cpp \
 	FramebufferNativeWindow.cpp \
 	GraphicBuffer.cpp \
 	GraphicBufferAllocator.cpp \
@@ -50,10 +51,6 @@ endif
 
 ifeq ($(TARGET_SOC),exynos5250)
 LOCAL_CFLAGS += -DSAMSUNG_EXYNOS5250
-endif
-
-ifeq ($(BOARD_USES_QCOM_HARDWARE), true)
-LOCAL_CFLAGS += -DQCOMHW
 endif
 
 LOCAL_MODULE:= libui
