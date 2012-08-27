@@ -21,11 +21,11 @@
 #include <utils/Errors.h>
 #include <binder/MemoryHeapBase.h>
 
-#include "Overlay.h"
+#include <ui/Overlay.h>
 
 namespace android {
 
-/*Overlay::Overlay(overlay_set_fd_hook set_fd,
+Overlay::Overlay(overlay_set_fd_hook set_fd,
         overlay_set_crop_hook set_crop,
         overlay_queue_buffer_hook queue_buffer,
         void *data)
@@ -37,7 +37,7 @@ namespace android {
     hook_data = data;
     mStatus = NO_ERROR;
 }
-*/
+
 Overlay::~Overlay() {
 }
 
@@ -48,8 +48,8 @@ status_t Overlay::dequeueBuffer(void** buffer)
 
 status_t Overlay::queueBuffer(void* buffer)
 {
-//    if (queue_buffer_hook)
-//        queue_buffer_hook(hook_data, buffer);
+    if (queue_buffer_hook)
+        queue_buffer_hook(hook_data, buffer);
     return mStatus;
 }
 
@@ -65,8 +65,8 @@ status_t Overlay::setParameter(int param, int value)
 
 status_t Overlay::setCrop(uint32_t x, uint32_t y, uint32_t w, uint32_t h)
 {
-//    if (set_crop_hook)
-//        set_crop_hook(hook_data, x, y, w, h);
+    if (set_crop_hook)
+        set_crop_hook(hook_data, x, y, w, h);
     return mStatus;
 }
 
@@ -77,8 +77,8 @@ status_t Overlay::getCrop(uint32_t* x, uint32_t* y, uint32_t* w, uint32_t* h)
 
 status_t Overlay::setFd(int fd)
 {
-//    if (set_fd_hook)
-//        set_fd_hook(hook_data, fd);
+    if (set_fd_hook)
+        set_fd_hook(hook_data, fd);
     return mStatus;
 }
 
@@ -99,7 +99,7 @@ status_t Overlay::getStatus() const {
     return mStatus;
 }
 
-const native_handle* Overlay::getHandleRef() const {
+void* Overlay::getHandleRef() const {
     return 0;
 }
 
