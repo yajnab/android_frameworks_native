@@ -1197,21 +1197,6 @@ EGLBoolean eglGetSyncAttribKHR(EGLDisplay dpy, EGLSyncKHR sync,
 // ANDROID extensions
 // ----------------------------------------------------------------------------
 
-EGLClientBuffer eglGetRenderBufferANDROID(EGLDisplay dpy, EGLSurface draw)
-{
-    clearError();
-
-    const egl_display_ptr dp = validate_display(dpy);
-    if (!dp) return EGL_FALSE;
-
-    egl_surface_t const * const s = get_surface(draw);
-
-    egl_connection_t* const cnx = &gEGLImpl;
-    if (cnx->dso && cnx->egl.eglGetRenderBufferANDROID) {
-        return cnx->egl.eglGetRenderBufferANDROID(dp->disp.dpy, s->surface);
-    }
-    return setError(EGL_BAD_DISPLAY, (EGLClientBuffer*)0);
-}
 
 #ifdef QCOM_HARDWARE
 EGLClientBuffer eglGetRenderBufferANDROID(EGLDisplay dpy, EGLSurface surface)
