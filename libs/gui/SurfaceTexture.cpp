@@ -272,7 +272,9 @@ status_t SurfaceTexture::updateTexImage(BufferRejecter* rejecter) {
             }
         }
 
+#ifndef QCOM_HARDWARE
         if (err == NO_ERROR) {
+#endif
             GLint error;
             while ((error = glGetError()) != GL_NO_ERROR) {
                 ST_LOGW("updateTexImage: clearing GL error: %#04x", error);
@@ -291,7 +293,9 @@ status_t SurfaceTexture::updateTexImage(BufferRejecter* rejecter) {
             if (err == NO_ERROR) {
                 err = syncForReleaseLocked(dpy);
             }
-        }
+#ifndef QCOM_HARDWARE
+      }
+#endif
 
         if (err != NO_ERROR) {
             // Release the buffer we just acquired.  It's not safe to
