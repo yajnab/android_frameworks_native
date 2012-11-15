@@ -183,7 +183,11 @@ status_t SurfaceTexture::updateTexImage() {
     return SurfaceTexture::updateTexImage(NULL);
 }
 
+#ifdef DECIDE_TEXTURE_TARGET
+status_t SurfaceTexture::updateTexImage(BufferRejecter* rejecter, bool isComposition) {
+#else
 status_t SurfaceTexture::updateTexImage(BufferRejecter* rejecter) {
+#endif
     ATRACE_CALL();
     ST_LOGV("updateTexImage");
     Mutex::Autolock lock(mMutex);
@@ -263,6 +267,29 @@ status_t SurfaceTexture::updateTexImage(BufferRejecter* rejecter) {
                 if(gpuSupportedFormat) {
                     image = createImage(dpy, mEGLSlots[buf].mGraphicBuffer);
                     mEGLSlots[buf].mEglImage = image;
+
+#ifdef DECIDE_TEXTURE_TARGET
+                // GPU is not efficient in handling GL_TEXTURE_EXTERNAL_OES
+                // texture target. Depending on the image format, decide,
+                // the texture target to be used
+                if(isComposition){
+                    switch (mEGLSlots[buf].mGraphicBuffer->format) {
+                        case HAL_PIXEL_FORMAT_RGBA_8888:
+                        case HAL_PIXEL_FORMAT_RGBX_8888:
+                        case HAL_PIXEL_FORMAT_RGB_888:
+                        case HAL_PIXEL_FORMAT_RGB_565:
+                        case HAL_PIXEL_FORMAT_BGRA_8888:
+                        case HAL_PIXEL_FORMAT_RGBA_5551:
+                        case HAL_PIXEL_FORMAT_RGBA_4444:
+                            mTexTarget = GL_TEXTURE_2D;
+                            break;
+                        default:
+                            mTexTarget = GL_TEXTURE_EXTERNAL_OES;
+                            break;
+                    }
+                }
+#endif
+
                     if (image == EGL_NO_IMAGE_KHR) {
                         // NOTE: if dpy was invalid, createImage() is guaranteed to
                         // fail. so we'd end up here.
@@ -284,13 +311,18 @@ status_t SurfaceTexture::updateTexImage(BufferRejecter* rejecter) {
                 glBindTexture(mTexTarget, mTexName);
                 glEGLImageTargetTexture2DOES(mTexTarget, (GLeglImageOES)image);
             }
+        bool failed = false;
             while ((error = glGetError()) != GL_NO_ERROR) {
                 ST_LOGE("updateTexImage: error binding external texture image %p "
                         "(slot %d): %#04x", image, buf, error);
+            failed = true;
                 err = UNKNOWN_ERROR;
             }
-
+#ifndef QCOM_HARDWARE
             if (err == NO_ERROR) {
+#else
+            if (failed) {
+#endif
                 err = syncForReleaseLocked(dpy);
             }
 #ifndef QCOM_HARDWARE
@@ -439,6 +471,7 @@ status_t SurfaceTexture::attachToContext(GLuint tex) {
         // the SurfaceTexture was detached from the old context, so we need to
         // recreate it here.
         EGLImageKHR image = createImage(dpy, mCurrentTextureBuf);
+
         if (image == EGL_NO_IMAGE_KHR) {
             return UNKNOWN_ERROR;
         }
