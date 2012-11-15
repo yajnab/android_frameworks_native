@@ -320,16 +320,23 @@ status_t SurfaceTexture::updateTexImage(BufferRejecter* rejecter) {
             }
 #ifndef QCOM_HARDWARE
             if (err == NO_ERROR) {
+                err = syncForReleaseLocked(dpy);
 #else
             if (failed) {
+            return -EINVAL;
 #endif
-                err = syncForReleaseLocked(dpy);
+
             }
 #ifndef QCOM_HARDWARE
       }
 #endif
 
+#ifndef QCOM_HARDWARE
         if (err != NO_ERROR) {
+#else
+        if (failed) {
+#endif
+
             // Release the buffer we just acquired.  It's not safe to
             // release the old buffer, so instead we just drop the new frame.
             mBufferQueue->releaseBuffer(buf, dpy, mEGLSlots[buf].mFence);
@@ -478,13 +485,18 @@ status_t SurfaceTexture::attachToContext(GLuint tex) {
 
         // Attach the current buffer to the GL texture.
         glEGLImageTargetTexture2DOES(mTexTarget, (GLeglImageOES)image);
+        bool failed = false;
 
         GLint error;
         status_t err = OK;
         while ((error = glGetError()) != GL_NO_ERROR) {
             ST_LOGE("attachToContext: error binding external texture image %p "
                     "(slot %d): %#04x", image, mCurrentTexture, error);
+#ifndef QCOM_HARDWARE
             err = UNKNOWN_ERROR;
+#else
+            failed = true;
+#endif
         }
 
         // We destroy the EGLImageKHR here because the current buffer may no
@@ -494,8 +506,13 @@ status_t SurfaceTexture::attachToContext(GLuint tex) {
         // gets acquired in updateTexImage.
         eglDestroyImageKHR(dpy, image);
 
+#ifndef QCOM_HARDWARE
         if (err != OK) {
             return err;
+#else
+        if (failed) {
+            return -EINVAL;
+#endif
         }
     }
 
