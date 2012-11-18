@@ -76,7 +76,7 @@ status_t GraphicBufferMapper::lock(buffer_handle_t handle,
     ATRACE_CALL();
     status_t err;
 #ifdef MISSING_GRALLOC_BUFFERS
-    int tries=5;
+        int tries=5;
 #endif
 
     err = mAllocMod->lock(mAllocMod, handle, usage,
@@ -84,13 +84,13 @@ status_t GraphicBufferMapper::lock(buffer_handle_t handle,
             vaddr);
 #ifdef MISSING_GRALLOC_BUFFERS
     while (err && tries) {
-	usleep(1000);
+        sleep(1000);
         err = mAllocMod->unlock(mAllocMod, handle);
         err = mAllocMod->lock(mAllocMod, handle, usage,
-            bounds.left, bounds.top, bounds.width(), bounds.height(),
-            vaddr);
-	tries--;
-    }
+                                       bounds.left, bounds.top, bounds.width(), bounds.height(),
+                                       vaddr);
+        tries--;
+        }
 #endif
 
     ALOGW_IF(err, "lock(...) failed %d (%s)", err, strerror(-err));

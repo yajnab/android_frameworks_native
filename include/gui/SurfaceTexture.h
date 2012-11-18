@@ -336,7 +336,7 @@ private:
 #ifdef DECIDE_TEXTURE_TARGET
     GLenum mTexTarget;
 #else
-     const GLenum mTexTarget;
+    const GLenum mTexTarget;
 #endif
 
     // EGLSlot contains the information and object references that

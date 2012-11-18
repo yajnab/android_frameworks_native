@@ -36,7 +36,6 @@ ifeq ($(BOARD_ADRENO_DECIDE_TEXTURE_TARGET),true)
     LOCAL_CFLAGS += -DDECIDE_TEXTURE_TARGET
 endif
 
-
 LOCAL_SHARED_LIBRARIES := \
 	libcutils \
 	libhardware \

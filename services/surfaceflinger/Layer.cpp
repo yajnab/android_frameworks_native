@@ -671,7 +671,13 @@ void Layer::lockPageFlip(bool& recomputeVisibleRegions)
         Reject r(mDrawingState, currentState(), recomputeVisibleRegions);
 
 #ifdef DECIDE_TEXTURE_TARGET
-        if (mSurfaceTexture->updateTexImage(&r,true) < NO_ERROR) {
+        // While calling updateTexImage() from SurfaceFlinger, let it know
+        // by passing an extra parameter
+        // This will be true always.
+
+        bool isComposition = true;
+
+        if (mSurfaceTexture->updateTexImage(&r, isComposition) < NO_ERROR) {
 #else
         if (mSurfaceTexture->updateTexImage(&r) < NO_ERROR) {
 #endif
