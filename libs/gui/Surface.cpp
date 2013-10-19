@@ -462,11 +462,15 @@ int Surface::dispatchSetBuffersGeometry(va_list args) {
     if (err != 0) {
         return err;
     }
+#ifdef QCOM_BSP
     err = setBuffersFormat(f);
     if (err != 0) {
         return err;
     }
     return updateBuffersGeometry(0,0,0);
+#else
+    return setBuffersFormat(f);
+#endif
 }
 
 int Surface::dispatchSetBuffersDimensions(va_list args) {
